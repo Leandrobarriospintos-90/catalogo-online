@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca de Enlaces</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- ESTILOS GENERALES --- */
+        :root {
+            --library-item-bg: #ffffff;
+            --library-item-border: #e5e7eb;
+            --main-bg: #f0f0f0;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--main-bg);
+            color: #333;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* --- ESTILOS DE BOTONES, MENSAJES Y OTROS --- */
+        .btn {
+            padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600;
+            transition: all 0.2s ease-in-out; text-align: center; cursor: pointer; border: 1px solid transparent;
+        }
+        .btn-secondary { background-color: #6b7280; color: white; }
+        .btn-secondary:hover { background-color: #4b5563; }
+        .btn-sm { padding: 0.5rem 1rem; font-size: 0.875rem; }
+
+        .btn-view {
+            background-color: #3CB371; /* MediumSeaGreen */
+            color: white;
+        }
+        .btn-view:hover {
+            background-color: #2E8B57; /* SeaGreen */
+        }
+
+        .form-input {
+            border: 1px solid #d1d5db; border-radius: 0.375rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: #ffffff; color: #333;
+        }
+        .form-input:focus {
+            outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+
+        .message-base {
+            display: none; margin-top: 0.75rem; padding: 0.75rem;
+            border: 1px solid; border-radius: 0.375rem; font-size: 0.875rem;
+        }
+        .error-message { background-color: #fef2f2; color: #991b1b; border-color: #fecaca; }
+        
+        /* --- ESTILOS DE LA BIBLIOTECA --- */
+        .library-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        .library-item {
+            background-color: var(--library-item-bg);
+            border: 1px solid var(--library-item-border);
+            border-radius: 0.5rem; padding: 1rem;
+            display: flex; flex-direction: column;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+        }
+        .library-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .library-item img.library-item-cover {
+            width: 100%; height: auto; max-height: 220px;
+            object-fit: contain; border-radius: 0.25rem;
+            margin-bottom: 0.75rem; background-color: #e0e0e0;
+            border: 1px solid var(--library-item-border);
+        }
+        .library-item h3 {
+            font-size: 1.05rem; font-weight: 600; margin-bottom: 0.25rem;
+            overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            min-height: 2.5em;
+        }
+        .library-item p.library-item-author {
+            font-size: 0.8rem; color: #6b7280; margin-bottom: 0.75rem;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .library-item-actions { margin-top: auto; display: flex; gap: 0.5rem; flex-wrap: wrap; padding-top: 0.5rem;}
+        .library-item-actions .btn { flex-grow: 1; font-size: 0.8rem; padding: 0.4rem 0.8rem;}
+
+        /* --- FILTROS DE COLECCIONES --- */
+        #collectionFilters .btn { color: white !important; }
+        #collectionFilters .btn.active { color: white !important; }
+        #collectionFilters .btn[data-collection="all"].active { background-color: #455A64 !important; }
+        #collectionFilters .btn[data-collection="Ciencias"].active { background-color: #E53935 !important; }
+        #collectionFilters .btn[data-collection="Sociedad en movimiento"].active { background-color: #FDD835 !important; color: black !important; }
+        #collectionFilters .btn[data-collection="Aulas"].active { background-color: #1976D2 !important; }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px;
+            border-radius: 50%; border-left-color: #2563eb;
+            animation: spin 1s ease infinite; display: block;
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="h-screen flex flex-col">
+    <div id="appLoadingSpinner" class="spinner"></div>
+
+    <!-- Contenedor Principal de la App -->
+    <div id="appContainer" class="flex flex-col h-full" style="visibility: hidden;">
+        
+        <!-- ENCABEZADO Y FILTROS FIJOS -->
+        <div class="flex-shrink-0 bg-gray-100 shadow-sm">
+            <header id="appHeader" class="p-4 bg-white flex flex-col sm:flex-row justify-between items-center">
+                <div class="flex items-center">
+                    <!-- SVG INSERTADO DIRECTAMENTE -->
+                    <svg class="w-7 h-7 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0l-1.5-1.5a2 2 0 112.828-2.828l1.5 1.5l3-3a2 2 0 012.828 0z" clip-rule="evenodd"></path><path fill-rule="evenodd" d="M3.414 15.414a2 2 0 112.828-2.828l3 3a2 2 0 01-2.828 0l-1.5-1.5a2 2 0 11-2.828 2.828l1.5 1.5l-3 3a2 2 0 01-2.828 0z" clip-rule="evenodd"></path></svg>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-blue-600">Biblioteca de Enlaces</h1>
+                </div>
+                <div class="flex items-center mt-4 sm:mt-0">
+                    <input type="search" id="searchInput" placeholder="Buscar por título o autor..." class="form-input w-full sm:w-auto px-3 py-1 text-sm rounded-full">
+                </div>
+            </header>
+            <div class="px-4 md:px-6 py-4">
+                 <div id="collectionFilters" class="flex flex-wrap gap-2">
+                    <button data-collection="all" class="btn btn-sm btn-secondary">Mostrar Todos</button>
+                    <button data-collection="Ciencias" class="btn btn-sm btn-secondary">Ciencias</button>
+                    <button data-collection="Sociedad en movimiento" class="btn btn-sm btn-secondary">Sociedad en movimiento</button>
+                    <button data-collection="Aulas" class="btn btn-sm btn-secondary">Aulas</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENIDO CON SCROLL -->
+        <main id="libraryView" class="flex-grow p-4 md:p-6 overflow-y-auto">
+            <div id="libraryMessage" class="message-base mb-4"></div>
+            <div id="libraryGrid" class="library-grid">
+                <!-- Los elementos de la biblioteca se insertarán aquí -->
+            </div>
+            <p id="emptyLibraryMessage" class="text-center text-gray-500 mt-8 hidden">
+                Tu biblioteca está vacía o no se pudo cargar.
+            </p>
+        </main>
+    </div>
+    
+    <footer id="appFooter" class="flex-shrink-0 text-center text-sm py-3 bg-gray-200">
+        <p>&copy; <span id="year"></span> Biblioteca de Enlaces. Todos los derechos reservados.</p>
+    </footer>
+
+    <script type="module">
+        // --- Global DOM Variables ---
+        const appContainer = document.getElementById('appContainer');
+        const libraryGrid = document.getElementById('libraryGrid');
+        const libraryMessage = document.getElementById('libraryMessage');
+        const emptyLibraryMessage = document.getElementById('emptyLibraryMessage');
+        const appLoadingSpinner = document.getElementById('appLoadingSpinner');
+        const collectionFiltersContainer = document.getElementById('collectionFilters');
+        const searchInput = document.getElementById('searchInput');
+        
+        let currentCollectionFilter = 'all';
+        let remoteLibraryBooks = [];
+
+        // --- Configuración ---
+        const REMOTE_LIBRARY_CONFIG = {
+            baseUrl: "https://tu-usuario.github.io/tu-repositorio/",
+            indexFile: "library_index.json"
+        };
+        const MOCK_LIBRARY_INDEX = [
+          {
+            "id": "google-docs",
+            "title": "Documento de Proyecto",
+            "author": "Equipo de Desarrollo",
+            "collection": "Aulas",
+            "targetUrl": "https://docs.google.com/",
+            "coverImageUrl": "https://placehold.co/200x280/4285F4/ffffff?text=Docs"
+          },
+          {
+            "id": "github-repo",
+            "title": "Repositorio del Lector",
+            "author": "Michel Foucault",
+            "collection": "Sociedad en movimiento",
+            "targetUrl": "https://github.com/",
+            "coverImageUrl": "https://placehold.co/200x280/333333/ffffff?text=GitHub"
+          },
+          {
+            "id": "wikipedia-ciencia",
+            "title": "Artículo de Ciencia",
+            "author": "Wikipedia",
+            "collection": "Ciencias",
+            "targetUrl": "https://es.wikipedia.org/wiki/Ciencia",
+            "coverImageUrl": "https://placehold.co/200x280/c8c9ca/000000?text=Wiki"
+          },
+          {
+            "id": "khan-academy-math",
+            "title": "Khan Academy - Matemáticas",
+            "author": "Sal Khan",
+            "collection": "Aulas",
+            "targetUrl": "https://es.khanacademy.org/math",
+            "coverImageUrl": "https://placehold.co/200x280/142d2b/ffffff?text=Khan"
+          },
+           {
+            "id": "nature-journal",
+            "title": "Revista Nature",
+            "author": "Nature Publishing Group",
+            "collection": "Ciencias",
+            "targetUrl": "https://www.nature.com/",
+            "coverImageUrl": "https://placehold.co/200x280/D8412C/ffffff?text=Nature"
+          },
+          {
+            "id": "ted-talks",
+            "title": "Charlas TED",
+            "author": "TED",
+            "collection": "Sociedad en movimiento",
+            "targetUrl": "https://www.ted.com/",
+            "coverImageUrl": "https://placehold.co/200x280/E62B1E/ffffff?text=TED"
+          },
+          {
+            "id": "nasa-hubble",
+            "title": "Telescopio Hubble",
+            "author": "NASA",
+            "collection": "Ciencias",
+            "targetUrl": "https://science.nasa.gov/mission/hubble/",
+            "coverImageUrl": "https://placehold.co/200x280/0B3D91/ffffff?text=NASA"
+          },
+          {
+            "id": "duolingo",
+            "title": "Aprende un idioma con Duolingo",
+            "author": "Duolingo Inc.",
+            "collection": "Aulas",
+            "targetUrl": "https://www.duolingo.com/",
+            "coverImageUrl": "https://placehold.co/200x280/58CC02/ffffff?text=Duo"
+          },
+          {
+            "id": "un-noticias",
+            "title": "Noticias de la ONU",
+            "author": "Naciones Unidas",
+            "collection": "Sociedad en movimiento",
+            "targetUrl": "https://news.un.org/es/",
+            "coverImageUrl": "https://placehold.co/200x280/009EDB/ffffff?text=ONU"
+          },
+          {
+            "id": "scihub",
+            "title": "Sci-Hub",
+            "author": "Alexandra Elbakyan",
+            "collection": "Ciencias",
+            "targetUrl": "https://sci-hub.se/",
+            "coverImageUrl": "https://placehold.co/200x280/4A4A4A/ffffff?text=Sci-Hub"
+          },
+          {
+            "id": "amnistia-internacional",
+            "title": "Amnistía Internacional",
+            "author": "Amnesty International",
+            "collection": "Sociedad en movimiento",
+            "targetUrl": "https://www.amnesty.org/es/",
+            "coverImageUrl": "https://placehold.co/200x280/FFD200/000000?text=Amnesty"
+          },
+          {
+            "id": "coursera",
+            "title": "Coursera",
+            "author": "Coursera Inc.",
+            "collection": "Aulas",
+            "targetUrl": "https://www.coursera.org/",
+            "coverImageUrl": "https://placehold.co/200x280/0056D2/ffffff?text=Coursera"
+          },
+          {
+            "id": "national-geographic",
+            "title": "National Geographic",
+            "author": "National Geographic Society",
+            "collection": "Ciencias",
+            "targetUrl": "https://www.nationalgeographic.com/",
+            "coverImageUrl": "https://placehold.co/200x280/FFCC00/000000?text=NatGeo"
+          },
+           {
+            "id": "the-guardian",
+            "title": "The Guardian",
+            "author": "Guardian Media Group",
+            "collection": "Sociedad en movimiento",
+            "targetUrl": "https://www.theguardian.com/international",
+            "coverImageUrl": "https://placehold.co/200x280/005689/ffffff?text=Guardian"
+          },
+          {
+            "id": "edx-cursos",
+            "title": "Cursos en edX",
+            "author": "edX Inc.",
+            "collection": "Aulas",
+            "targetUrl": "https://www.edx.org/",
+            "coverImageUrl": "https://placehold.co/200x280/002147/ffffff?text=edX"
+          },
+          {
+            "id": "investopedia",
+            "title": "Investopedia",
+            "author": "Dotdash Meredith",
+            "collection": "Sociedad en movimiento",
+            "targetUrl": "https://www.investopedia.com/",
+            "coverImageUrl": "https://placehold.co/200x280/007360/ffffff?text=Invest"
+          },
+           {
+            "id": "plos-one",
+            "title": "PLOS ONE",
+            "author": "Public Library of Science",
+            "collection": "Ciencias",
+            "targetUrl": "https://journals.plos.org/plosone/",
+            "coverImageUrl": "https://placehold.co/200x280/008D82/ffffff?text=PLOS"
+          },
+          {
+            "id": "codecademy",
+            "title": "Codecademy",
+            "author": "Codecademy Inc.",
+            "collection": "Aulas",
+            "targetUrl": "https://www.codecademy.com/",
+            "coverImageUrl": "https://placehold.co/200x280/204056/ffffff?text=Code"
+          }
+        ];
+
+        // --- Funciones Auxiliares ---
+        function displayMessage(element, message, autoHide = true) {
+            if (!element) return;
+            element.textContent = message;
+            element.className = `message-base error-message`;
+            element.style.display = 'block';
+            if (autoHide) {
+                setTimeout(() => hideMessage(element), 5000);
+            }
+        }
+        function hideMessage(element) {
+            if (element) { element.style.display = 'none'; element.textContent = '';}
+        }
+
+        // --- Renderizado de la Biblioteca ---
+        function renderRemoteLibraryView() {
+            libraryGrid.innerHTML = '';
+            hideMessage(libraryMessage);
+
+            const searchTerm = searchInput.value.toLowerCase().trim();
+
+            const searchedBooks = remoteLibraryBooks.filter(book => {
+                if (!searchTerm) return true;
+                const titleMatch = (book.title || '').toLowerCase().includes(searchTerm);
+                const authorMatch = (book.author || '').toLowerCase().includes(searchTerm);
+                return titleMatch || authorMatch;
+            });
+
+            const filteredBooks = searchedBooks.filter(book => 
+                currentCollectionFilter === 'all' || book.collection === currentCollectionFilter
+            );
+
+            emptyLibraryMessage.classList.toggle('hidden', filteredBooks.length > 0);
+            if (filteredBooks.length === 0) {
+                emptyLibraryMessage.textContent = searchTerm
+                    ? `No se encontraron resultados para "${searchInput.value}".`
+                    : `No hay elementos en la colección "${currentCollectionFilter}".`;
+            }
+
+            filteredBooks.sort((a,b) => (a.title || "").localeCompare(b.title || ""));
+
+            filteredBooks.forEach(bookItem => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'library-item';
+                
+                const coverImg = document.createElement('img');
+                coverImg.className = 'library-item-cover';
+                coverImg.src = bookItem.coverImageUrl ? (new URL(bookItem.coverImageUrl, REMOTE_LIBRARY_CONFIG.baseUrl).href) : 'https://placehold.co/200x280/e0e0e0/777777?text=Sin+Portada';
+                coverImg.alt = `Portada de ${bookItem.title}`;
+                coverImg.onerror = function() { this.src = 'https://placehold.co/200x280/e0e0e0/777777?text=Error'; };
+                itemDiv.appendChild(coverImg);
+
+                const title = document.createElement('h3');
+                title.textContent = bookItem.title || bookItem.id;
+                title.title = bookItem.title || bookItem.id;
+                itemDiv.appendChild(title);
+
+                const author = document.createElement('p');
+                author.className = 'library-item-author';
+                author.textContent = bookItem.author || 'Autor desconocido';
+                itemDiv.appendChild(author);
+                
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'library-item-actions';
+
+                const viewButton = document.createElement('button');
+                viewButton.textContent = 'Ver';
+                viewButton.className = 'btn btn-view btn-sm';
+                viewButton.addEventListener('click', () => {
+                    if(bookItem.targetUrl) {
+                        window.open(bookItem.targetUrl, '_blank');
+                    } else {
+                        displayMessage(libraryMessage, "Este elemento no tiene una URL de destino.");
+                    }
+                });
+                actionsDiv.appendChild(viewButton);
+                itemDiv.appendChild(actionsDiv);
+
+                libraryGrid.appendChild(itemDiv);
+            });
+            
+            const filterButtons = collectionFiltersContainer.querySelectorAll('button');
+            filterButtons.forEach(button => {
+                const collection = button.dataset.collection;
+                button.classList.toggle('active', collection === currentCollectionFilter);
+                button.classList.toggle('btn-secondary', collection !== currentCollectionFilter);
+            });
+        }
+        
+        async function fetchAndRenderRemoteLibrary() {
+            try {
+                // Simulación de fetch
+                await new Promise(resolve => setTimeout(resolve, 500)); 
+                remoteLibraryBooks = MOCK_LIBRARY_INDEX; 
+                
+                renderRemoteLibraryView();
+
+            } catch (error) {
+                console.error("Fallo al cargar la biblioteca remota:", error);
+                displayMessage(libraryMessage, "Error al cargar la biblioteca. Usando datos de ejemplo.", false);
+                remoteLibraryBooks = MOCK_LIBRARY_INDEX;
+                renderRemoteLibraryView();
+            } finally {
+                appLoadingSpinner.style.display = 'none';
+                appContainer.style.visibility = 'visible';
+            }
+        }
+
+        // --- Manejadores de Eventos ---
+        collectionFiltersContainer.addEventListener('click', (event) => {
+            if (event.target.tagName === 'BUTTON') {
+                const collection = event.target.dataset.collection;
+                if (collection) {
+                    currentCollectionFilter = collection;
+                    renderRemoteLibraryView();
+                }
+            }
+        });
+
+        searchInput.addEventListener('input', () => {
+            renderRemoteLibraryView();
+        });
+
+        // --- Inicialización ---
+        function initializeApp() {
+            document.getElementById('year').textContent = new Date().getFullYear();
+            fetchAndRenderRemoteLibrary();
+        }
+
+        initializeApp();
+    </script>
+</body>
+</html>
