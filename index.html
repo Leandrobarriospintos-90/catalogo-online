@@ -119,8 +119,8 @@
         <div class="flex-shrink-0 bg-gray-100 shadow-sm z-10">
             <header id="appHeader" class="p-4 bg-white flex flex-col sm:flex-row justify-between items-center">
                 <div class="flex items-center">
-                    <!-- SVG INSERTADO DIRECTAMENTE -->
-                    <svg class="w-7 h-7 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20" xmlns="https://leandrobarriospintos-90.github.io/catalogo-online/logos/original-edunlu-svg.svg"><path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0l-1.5-1.5a2 2 0 112.828-2.828l1.5 1.5l3-3a2 2 0 012.828 0z" clip-rule="evenodd"></path><path fill-rule="evenodd" d="M3.414 15.414a2 2 0 112.828-2.828l3 3a2 2 0 01-2.828 0l-1.5-1.5a2 2 0 11-2.828 2.828l1.5 1.5l-3 3a2 2 0 01-2.828 0z" clip-rule="evenodd"></path></svg>
+                    <!-- LOGO CARGADO DESDE URL -->
+                    <img id="appLogoImg" alt="Logo" class="w-7 h-7 mr-2">
                     <h1 class="text-2xl sm:text-3xl font-bold text-blue-600">Biblioteca de Enlaces</h1>
                 </div>
                 <div class="flex items-center mt-4 sm:mt-0">
@@ -162,6 +162,7 @@
         const appLoadingSpinner = document.getElementById('appLoadingSpinner');
         const collectionFiltersContainer = document.getElementById('collectionFilters');
         const searchInput = document.getElementById('searchInput');
+        const appLogoImg = document.getElementById('appLogoImg');
         
         let currentCollectionFilter = 'all';
         let remoteLibraryBooks = [];
@@ -171,6 +172,9 @@
             baseUrl: "https://leandrobarriospintos-90.github.io/catalogo-online/",
             indexFile: "library_index.json"
         };
+        // URL DEL LOGO - REEMPLAZA ESTA URL CON LA TUYA
+        const LOGO_URL = "https://leandrobarriospintos-90.github.io/catalogo-online/logos/original-edunlu-svg.svg";
+        
         const MOCK_LIBRARY_INDEX = [
           {
             "id": "google-docs",
@@ -444,6 +448,9 @@
         // --- Inicialización ---
         function initializeApp() {
             document.getElementById('year').textContent = new Date().getFullYear();
+            if (appLogoImg) {
+                appLogoImg.src = LOGO_URL;
+            }
             fetchAndRenderRemoteLibrary();
         }
 
