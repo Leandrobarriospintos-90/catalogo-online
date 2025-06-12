@@ -212,6 +212,17 @@
         function hideMessage(element) {
             if (element) { element.style.display = 'none'; element.textContent = '';}
         }
+        function formatDate(dateString) {
+            if (!dateString) {
+                return 'Sin fecha';
+            }
+            try {
+                const [year, month, day] = dateString.split('-');
+                return `${day}-${month}-${year}`;
+            } catch(e) {
+                return dateString; // Return original string if format is unexpected
+            }
+        }
 
         // --- Renderizado de la Biblioteca ---
         function renderRemoteLibraryView() {
