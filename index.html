@@ -85,17 +85,18 @@
             overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
             min-height: 2.5em;
         }
-        .library-item p.library-item-author {
-            font-size: 0.8rem; color: #6b7280; margin-bottom: 0.75rem;
+        .library-item .item-meta {
+            font-size: 0.75rem; color: #6b7280; margin-bottom: 0.75rem;
+        }
+        .library-item .item-author {
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         .library-item-actions { margin-top: auto; display: flex; gap: 0.5rem; flex-wrap: wrap; padding-top: 0.5rem;}
         .library-item-actions .btn { flex-grow: 1; font-size: 0.8rem; padding: 0.4rem 0.8rem;}
 
-        /* --- FILTROS DE COLECCIONES --- */
-        #collectionFilters .btn { color: white !important; }
-        #collectionFilters .btn.active { color: white !important; }
-        #collectionFilters .btn[data-collection="all"].active { background-color: #455A64 !important; }
+        /* --- FILTROS Y ORDEN --- */
+        .filter-sort-controls .btn { color: white !important; }
+        .filter-sort-controls .btn.active { background-color: #455A64 !important; }
         #collectionFilters .btn[data-collection="Ciencias"].active { background-color: #E53935 !important; }
         #collectionFilters .btn[data-collection="Sociedad en movimiento"].active { background-color: #FDD835 !important; color: black !important; }
         #collectionFilters .btn[data-collection="Aulas"].active { background-color: #1976D2 !important; }
@@ -119,7 +120,6 @@
         <div class="flex-shrink-0 bg-gray-100 shadow-sm z-10">
             <header id="appHeader" class="p-4 bg-white flex flex-col sm:flex-row justify-between items-center">
                 <div class="flex items-center">
-                    <!-- LOGO CARGADO DESDE URL -->
                     <img id="appLogoImg" alt="Logo" class="w-7 h-7 mr-2">
                     <h1 class="text-2xl sm:text-3xl font-bold"><font color="#13a253">Catálogo</font></h1>
                 </div>
@@ -127,12 +127,17 @@
                     <input type="search" id="searchInput" placeholder="Buscar por título o autor..." class="form-input w-full sm:w-auto px-3 py-1 text-sm rounded-full">
                 </div>
             </header>
-            <div class="px-4 md:px-6 py-4">
-                 <div id="collectionFilters" class="flex flex-wrap gap-2">
+            <div class="px-4 md:px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                 <div id="collectionFilters" class="flex flex-wrap gap-2 filter-sort-controls">
                     <button data-collection="all" class="btn btn-sm btn-secondary">Mostrar Todos</button>
                     <button data-collection="Ciencias" class="btn btn-sm btn-secondary">Ciencias</button>
                     <button data-collection="Sociedad en movimiento" class="btn btn-sm btn-secondary">Sociedad en movimiento</button>
                     <button data-collection="Aulas" class="btn btn-sm btn-secondary">Aulas</button>
+                </div>
+                <div id="sortControls" class="flex flex-wrap items-center gap-2 filter-sort-controls">
+                    <span class="text-sm font-medium mr-2">Ordenar por:</span>
+                    <button id="sortAlpha" data-sort="alpha" class="btn btn-sm btn-secondary">A-Z</button>
+                    <button id="sortDate" data-sort="date" class="btn btn-sm btn-secondary">Fecha</button>
                 </div>
             </div>
         </div>
@@ -163,8 +168,10 @@
         const collectionFiltersContainer = document.getElementById('collectionFilters');
         const searchInput = document.getElementById('searchInput');
         const appLogoImg = document.getElementById('appLogoImg');
+        const sortControls = document.getElementById('sortControls');
         
         let currentCollectionFilter = 'all';
+        let currentSortMethod = 'alpha'; // 'alpha' o 'date'
         let remoteLibraryBooks = [];
 
         // --- Configuración ---
@@ -172,25 +179,24 @@
             baseUrl: "https://leandrobarriospintos-90.github.io/catalogo-online/",
             indexFile: "library_index.json"
         };
-        // URL DEL LOGO - REEMPLAZA ESTA URL CON LA TUYA
         const LOGO_URL = "https://leandrobarriospintos-90.github.io/catalogo-online/logos/original-edunlu-svg.svg";
         
         const MOCK_LIBRARY_INDEX = [
-          { "id": "accesos-y-exclusiones-id", "title": "Accesos y exclusiones a la cultura escrita. Concepciones, políticas y prácticas en el sistema educativo. Siglos XIX a XXI", "author": "Teresa Laura Artieda", "collection": "Ciencias", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/282/", "coverImageUrl": "covers/accesos_exclusiones.gif" },
-          { "id": "agendas-de-ordenamiento-ambiental-id", "title": "Agendas de ordenamiento ambiental", "author": "Nélida da Costa Pereira y María Cecilia Poggi", "collection": "Sociedad en movimiento", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/174/", "coverImageUrl": "covers/agendas-ordenamiento.gif" },
-          { "id": "agricultura-familiar-id", "title": "La agricultura familiar entre lo rural y lo urbano", "author": "González Maraschio Fernanda y Villarreal Federico", "collection": "Ciencias", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/233", "coverImageUrl": "covers/agricultura_familiar.gif" },
-          { "id": "aportes-para-las-renovaciones-id", "title": "Aportes para las renovaciones temáticas, conceptuales y didácticas de la Geografía escolar", "author": "Viviana Zenobi y Adriana B. Villa", "collection": "Sociedad en movimiento", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/299", "coverImageUrl": "covers/aportes_geografia.gif" },
-          { "id": "guia-ilustrada-id", "title": "Guía ilustrada de daños ocasionados por la ardilla de vientre rojo en Argentina", "author": "Mariela Borgnia, Paula Pedreira, Verónica Benitez, Agustina Darget y M. Laura Guichón", "collection": "Ciencias", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/300", "coverImageUrl": "covers/ardillas.gif" },
-          { "id": "el-campo-pedagogico-moderno-id", "title": "El campo pedagógico moderno en la formación de trabajadores y ciudadanos", "author": "Claudia Figari, Marcelo Hernández, Adriana Migliavacca y Gabriela Vilariño", "collection": "Aulas", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/93", "coverImageUrl": "covers/campo-pedagogico.gif" },
-          { "id": "claroscuros-id", "title": "Claroscuros", "author": "Cristian Avaca", "collection": "Sociedad en movimiento", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/78", "coverImageUrl": "covers/claro-oscuro.gif" },
-          { "id": "el-control-de-la-lectura-id", "title": "El control de la lectura", "author": "Roberta Paula Spregelburd y María Cristina Linares", "collection": "Ciencias", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/105", "coverImageUrl": "covers/control_de_la_lectura.gif" },
-          { "id": "estudios-cuenca-rio-lujan-id", "title": "Estudios de la Cuenca del Río Luján: Distintas miradas desde la Universidad Nacional de Luján", "author": "Elena Craig", "collection": "Sociedad en movimiento", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/291", "coverImageUrl": "covers/cuenca_rio_lujan.gif" },
-          { "id": "educacion-fisica-y-tic-id", "title": "Educación Física y TIC. Uso y conocimiento en Proyectos Pedagógicos situados en la Escuela Secundaria de la Provincia de Buenos Aires", "author": "Mariel Ruiz y Silvina Casablancas", "collection": "Aulas", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/322", "coverImageUrl": "covers/edu_fisica_tic.gif" },
-          { "id": "ensayos-para-pensar-id", "title": "Ensayos para pensar experiencias escolares. Educación y educación física", "author": "Graziano, Andrea Magdalena", "collection": "Aulas", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/152", "coverImageUrl": "covers/ensayos-para-pensar.gif" },
-          { "id": "entrelineas-id", "title": "Entrelíneas", "author": "Cristian Avaca", "collection": "Sociedad en movimiento", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/178", "coverImageUrl": "covers/entrelineas.gif" },
-          { "id": "esas-cosas-que-se-saben-id", "title": "Esas cosas que se saben", "author": "Marcos Tabossi", "collection": "Sociedad en movimiento", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/269", "coverImageUrl": "covers/esas_cosas.gif" },
-          { "id": "especies-invernales-id", "title": "Especies Invernales utilizadas como Verdeos de Invierno. Generalidades y datos de producción para la zona de influencia de la UNLu", "author": "Adriana Fernanda Spara y Eduardo Vernengo", "collection": "Ciencias", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/302", "coverImageUrl": "covers/especies_invernales.gif" },
-          { "id": "fundamentos-de-ambiente-id", "title": "Fundamentos de ecología y ambiente", "author": "Leonardo Malacalza, Fernando R. Momo y Carlos E. Coviella", "collection": "Aulas", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/123", "coverImageUrl": "covers/fundamentos-ecologia.gif" },
+          { "id": "accesos-y-exclusiones-id", "title": "Accesos y exclusiones a la cultura escrita. Concepciones, políticas y prácticas en el sistema educativo. Siglos XIX a XXI", "author": "Teresa Laura Artieda", "collection": "Ciencias", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/282/", "coverImageUrl": "covers/accesos_exclusiones.gif", "publishDate": "2025-05-10" },
+          { "id": "agendas-de-ordenamiento-ambiental-id", "title": "Agendas de ordenamiento ambiental", "author": "Nélida da Costa Pereira y María Cecilia Poggi", "collection": "Sociedad en movimiento", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/174/", "coverImageUrl": "covers/agendas-ordenamiento.gif", "publishDate": "2025-02-10" },
+          { "id": "agricultura-familiar-id", "title": "La agricultura familiar entre lo rural y lo urbano", "author": "González Maraschio Fernanda y Villarreal Federico", "collection": "Ciencias", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/233", "coverImageUrl": "covers/agricultura_familiar.gif", "publishDate": "2024-06-10" },
+          { "id": "aportes-para-las-renovaciones-id", "title": "Aportes para las renovaciones temáticas, conceptuales y didácticas de la Geografía escolar", "author": "Viviana Zenobi y Adriana B. Villa", "collection": "Sociedad en movimiento", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/299", "coverImageUrl": "covers/aportes_geografia.gif", "publishDate": "2024-03-10" },
+          { "id": "guia-ilustrada-id", "title": "Guía ilustrada de daños ocasionados por la ardilla de vientre rojo en Argentina", "author": "Mariela Borgnia, Paula Pedreira, Verónica Benitez, Agustina Darget y M. Laura Guichón", "collection": "Ciencias", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/300", "coverImageUrl": "covers/ardillas.gif", "publishDate": "2024-01-10" },
+          { "id": "el-campo-pedagogico-moderno-id", "title": "El campo pedagógico moderno en la formación de trabajadores y ciudadanos", "author": "Claudia Figari, Marcelo Hernández, Adriana Migliavacca y Gabriela Vilariño", "collection": "Aulas", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/93", "coverImageUrl": "covers/campo-pedagogico.gif", "publishDate": "2023-06-10" },
+          { "id": "claroscuros-id", "title": "Claroscuros", "author": "Cristian Avaca", "collection": "Sociedad en movimiento", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/78", "coverImageUrl": "covers/claro-oscuro.gif", "publishDate": "2023-04-10" },
+          { "id": "el-control-de-la-lectura-id", "title": "El control de la lectura", "author": "Roberta Paula Spregelburd y María Cristina Linares", "collection": "Ciencias", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/105", "coverImageUrl": "covers/control_de_la_lectura.gif", "publishDate": "2023-02-10" },
+          { "id": "estudios-cuenca-rio-lujan-id", "title": "Estudios de la Cuenca del Río Luján: Distintas miradas desde la Universidad Nacional de Luján", "author": "Elena Craig", "collection": "Sociedad en movimiento", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/291", "coverImageUrl": "covers/cuenca_rio_lujan.gif", "publishDate": "2022-06-10" },
+          { "id": "educacion-fisica-y-tic-id", "title": "Educación Física y TIC. Uso y conocimiento en Proyectos Pedagógicos situados en la Escuela Secundaria de la Provincia de Buenos Aires", "author": "Mariel Ruiz y Silvina Casablancas", "collection": "Aulas", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/322", "coverImageUrl": "covers/edu_fisica_tic.gif", "publishDate": "2022-05-10" },
+          { "id": "ensayos-para-pensar-id", "title": "Ensayos para pensar experiencias escolares. Educación y educación física", "author": "Graziano, Andrea Magdalena", "collection": "Aulas", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/152", "coverImageUrl": "covers/ensayos-para-pensar.gif", "publishDate": "2022-01-10" },
+          { "id": "entrelineas-id", "title": "Entrelíneas", "author": "Cristian Avaca", "collection": "Sociedad en movimiento", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/178", "coverImageUrl": "covers/entrelineas.gif", "publishDate": "2021-06-10" },
+          { "id": "esas-cosas-que-se-saben-id", "title": "Esas cosas que se saben", "author": "Marcos Tabossi", "collection": "Sociedad en movimiento", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/269", "coverImageUrl": "covers/esas_cosas.gif", "publishDate": "2021-05-10" },
+          { "id": "especies-invernales-id", "title": "Especies Invernales utilizadas como Verdeos de Invierno. Generalidades y datos de producción para la zona de influencia de la UNLu", "author": "Adriana Fernanda Spara y Eduardo Vernengo", "collection": "Ciencias", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/302", "coverImageUrl": "covers/especies_invernales.gif", "publishDate": "2021-01-10" },
+          { "id": "fundamentos-de-ambiente-id", "title": "Fundamentos de ecología y ambiente", "author": "Leonardo Malacalza, Fernando R. Momo y Carlos E. Coviella", "collection": "Aulas", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/123", "coverImageUrl": "covers/fundamentos-ecologia.gif", "publishDate": "2019-06-10" },
         ];
 
         // --- Funciones Auxiliares ---
@@ -225,14 +231,20 @@
                 currentCollectionFilter === 'all' || book.collection === currentCollectionFilter
             );
 
+            // Ordenar los libros filtrados
+            if (currentSortMethod === 'date') {
+                filteredBooks.sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
+            } else { // 'alpha'
+                filteredBooks.sort((a,b) => (a.title || "").localeCompare(b.title || ""));
+            }
+
+
             emptyLibraryMessage.classList.toggle('hidden', filteredBooks.length > 0);
             if (filteredBooks.length === 0) {
                 emptyLibraryMessage.textContent = searchTerm
                     ? `No se encontraron resultados para "${searchInput.value}".`
                     : `No hay elementos en la colección "${currentCollectionFilter}".`;
             }
-
-            filteredBooks.sort((a,b) => (a.title || "").localeCompare(b.title || ""));
 
             filteredBooks.forEach(bookItem => {
                 const itemDiv = document.createElement('div');
@@ -250,10 +262,16 @@
                 title.title = bookItem.title || bookItem.id;
                 itemDiv.appendChild(title);
 
-                const author = document.createElement('p');
-                author.className = 'library-item-author';
-                author.textContent = bookItem.author || 'Autor desconocido';
-                itemDiv.appendChild(author);
+                const metaDiv = document.createElement('div');
+                metaDiv.className = 'item-meta';
+                const authorSpan = document.createElement('div');
+                authorSpan.className = 'item-author';
+                authorSpan.textContent = bookItem.author || 'Autor desconocido';
+                const dateSpan = document.createElement('div');
+                dateSpan.textContent = bookItem.publishDate || 'Sin fecha';
+                metaDiv.appendChild(authorSpan);
+                metaDiv.appendChild(dateSpan);
+                itemDiv.appendChild(metaDiv);
                 
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'library-item-actions';
@@ -274,12 +292,10 @@
                 libraryGrid.appendChild(itemDiv);
             });
             
-            const filterButtons = collectionFiltersContainer.querySelectorAll('button');
-            filterButtons.forEach(button => {
-                const collection = button.dataset.collection;
-                button.classList.toggle('active', collection === currentCollectionFilter);
-                button.classList.toggle('btn-secondary', collection !== currentCollectionFilter);
-            });
+            // Actualizar botones activos
+            document.querySelectorAll('.filter-sort-controls button').forEach(button => button.classList.remove('active'));
+            document.querySelector(`#collectionFilters [data-collection="${currentCollectionFilter}"]`).classList.add('active');
+            document.querySelector(`#sortControls [data-sort="${currentSortMethod}"]`).classList.add('active');
         }
         
         async function fetchAndRenderRemoteLibrary() {
@@ -303,12 +319,16 @@
 
         // --- Manejadores de Eventos ---
         collectionFiltersContainer.addEventListener('click', (event) => {
-            if (event.target.tagName === 'BUTTON') {
-                const collection = event.target.dataset.collection;
-                if (collection) {
-                    currentCollectionFilter = collection;
-                    renderRemoteLibraryView();
-                }
+            if (event.target.dataset.collection) {
+                currentCollectionFilter = event.target.dataset.collection;
+                renderRemoteLibraryView();
+            }
+        });
+        
+        sortControls.addEventListener('click', (event) => {
+            if (event.target.dataset.sort) {
+                currentSortMethod = event.target.dataset.sort;
+                renderRemoteLibraryView();
             }
         });
 
