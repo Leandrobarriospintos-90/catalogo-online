@@ -172,7 +172,7 @@
         
         let currentCollectionFilter = 'all';
         let currentSortMethod = 'alpha'; // 'alpha' o 'date'
-        let remoteLibraryBooks = [];
+        let remoteLibraryBooks = [REMOTE_LIBRARY_CONFIG];
 
         // --- Configuración ---
         const REMOTE_LIBRARY_CONFIG = {
@@ -427,7 +427,7 @@
             } catch (error) {
                 console.error("Fallo al cargar la biblioteca remota:", error);
                 displayMessage(libraryMessage, "Error al cargar la biblioteca. Usando datos de ejemplo.", false);
-                remoteLibraryBooks = MOCK_LIBRARY_INDEX;
+                remoteLibraryBooks = REMOTE_LIBRARY_CONFIG;
                 renderRemoteLibraryView();
             } finally {
                 appLoadingSpinner.style.display = 'none';
