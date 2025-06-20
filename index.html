@@ -175,13 +175,13 @@
         let remoteLibraryBooks = [];
 
         // --- Configuración ---
-        const REMOTE_LIBRARY_CONFIG = {
+        const REMOTE_LIBRARY_CONFIG = [
             baseUrl: "https://leandrobarriospintos-90.github.io/catalogo-online/",
             indexFile: "datos/catalogo_edunlu.json"
-        };
+        ];
         const LOGO_URL = "https://leandrobarriospintos-90.github.io/catalogo-online/logos/original-edunlu-svg.svg";
         
-        const MOCK_LIBRARY_INDEX = [
+        const MOCK_LIBRARY_INDEX = {
         fetch('https://leandrobarriospintos-90.github.io/catalogo-online/datos/catalogo_edunlu.json') 
         
         
@@ -189,7 +189,7 @@
         
         
         
-        ];
+              };
 
         // --- Funciones Auxiliares ---
         function displayMessage(element, message, autoHide = true) {
