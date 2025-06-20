@@ -297,19 +297,14 @@
         
         async function fetchAndRenderRemoteLibrary() {
             try {
-                const response = await fetch(new URL(REMOTE_LIBRARY_CONFIG.indexFile, REMOTE_LIBRARY_CONFIG.baseUrl));
+                // **AJUSTE: Añadido para evitar problemas de caché**
+                const response = await fetch(new URL(REMOTE_LIBRARY_CONFIG.indexFile, REMOTE_LIBRARY_CONFIG.baseUrl), { cache: 'no-cache' });
                 if (!response.ok) {
                     throw new Error(`Error en la red: ${response.statusText}`);
                 }
-                // **CORRECCIÓN: Cargar como texto y limpiar antes de parsear**
-                // Primero, obtenemos la respuesta como texto plano.
-                let rawText = await response.text();
                 
-                // Luego, eliminamos las comas sobrantes (por ejemplo, al final de un array) 
-                // que causan errores de parseo de JSON.
+                let rawText = await response.text();
                 const cleanedText = rawText.replace(/,\s*([\]}])/g, '$1');
-
-                // Finalmente, parseamos el texto ya limpio.
                 remoteLibraryBooks = JSON.parse(cleanedText);
                 
                 renderRemoteLibraryView();
@@ -317,7 +312,6 @@
             } catch (error) {
                 console.error("Fallo al cargar la biblioteca remota:", error);
                 displayMessage(libraryMessage, "Error al cargar la biblioteca. Usando datos de ejemplo.", false);
-                // Fallback a los datos de ejemplo si la carga falla
                 remoteLibraryBooks = MOCK_LIBRARY_INDEX;
                 renderRemoteLibraryView();
             } finally {
