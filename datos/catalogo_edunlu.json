@@ -109,4 +109,6 @@
           { "id": "futbol-embriones-id", "title": "De fútbol, embriones y ecosistemas", "author": "Fernando Momo", "collection": "Sociedad en movimiento", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/201", "coverImageUrl": "covers/de_futbol_embriones_ecosistemas.gif", "publishDate": "2019-06-01" },
           { "id": "contribuciones-de-la-eugenesia-id", "title": "Contribuciones de la eugenesia, biotipología y medicina social a la intervención social.", "author": "Fernanda Maiola", "collection": "Ciencias", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/306", "coverImageUrl": "covers/contribuciones_eugenesia_biotipologia.gif.gif", "publishDate": "2024-01-23" },        
           { "id": "buenas-practicas-id", "title": "Buenas prácticas en producciones horti-florícolas en áreas periurbanas", "author": "Mariana Garbi", "collection": "Ciencias", "targetUrl": "https://www.edunlu.unlu.edu.ar/?q=node/141", "coverImageUrl": "covers/buenas_practicas_horti-floricolas.gif", "publishDate": "2018-01-25" },
-	]
+	{"id":"gentica-aplicada-a-la-produccin-avcola-especializacin-en-produccin-avcola","title":"Genética aplicada a la producción avícola: especialización en producción avícola.","author":"Melo, Julián E.","collection":"Aulas","targetUrl":"https://www.edunlu.unlu.edu.ar/?q=node/323","coverImageUrl":"covers/trazabilidad.gif","publishDate":"2025-12-01"},
+
+]
