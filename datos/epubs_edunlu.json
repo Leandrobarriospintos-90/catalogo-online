@@ -1,5 +1,8 @@
 [
           { "id": "esas-cosas-id", "title": "Esas cosas que se saben", "author": "Marcos Tabossi", "collection": "Sociedad en movimiento", "epubUrl": "https://leandrobarriospintos-90.github.io/EdUNLuLectorEpub-1/epub/esas_cosas_edunlu.epub", "coverImageUrl": "covers/esas_cosas.gif" },
+          { "id": "esas-cosas-id", "title": "Esas cosas que se saben", "author": "Marcos Tabossi", "collection": "Sociedad en movimiento", "epubUrl": "epub/x.epub", "coverImageUrl": "covers/esas_cosas.gif" },
+          { "id": "esas-cosas-id", "title": "Esas cosas que se saben", "author": "Marcos Tabossi", "collection": "Sociedad en movimiento", "epubUrl": "epub/z.epub", "coverImageUrl": "covers/esas_cosas.gif" },
+          { "id": "esas-cosas-id", "title": "Esas cosas que se saben", "author": "Marcos Tabossi", "collection": "Sociedad en movimiento", "epubUrl": "epub/y.epub", "coverImageUrl": "covers/esas_cosas.gif" },
           { "id": "accesos-y-exclusiones-id", "title": "Accesos y exclusiones a la cultura escrita. Concepciones, políticas y prácticas en el sistema educativo. Siglos XIX a XXI", "author": "Teresa Laura Artieda", "collection": "Ciencias", "epubUrl": "epub/x.epub", "coverImageUrl": "covers/accesos_exclusiones.gif" },
           { "id": "agricultura-familiar-id", "title": "La agricultura familiar entre lo rural y lo urbano", "author": "González Maraschio Fernanda y Villarreal Federico", "collection": "Ciencias", "epubUrl": "epub/x.epub", "coverImageUrl": "covers/agricultura_familiar.gif" },
           { "id": "control-de-la-lectura-id", "title": "El control de la lectura", "author": "Roberta Paula Spregelburd y María Cristina Linares", "collection": "Ciencias", "epubUrl": "epub/x.epub", "coverImageUrl": "covers/control_de_la_lectura.gif" },
